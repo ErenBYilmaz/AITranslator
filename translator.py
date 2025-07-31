@@ -3,6 +3,18 @@ import whisper
 from easynmt import EasyNMT
 from kokoro import KPipeline
 import soundfile as sf
+import sounddevice as sd
+import tempfile
+from typing import Optional
+
+
+def record_from_microphone(duration: int = 5, sample_rate: int = 16000) -> str:
+    """Record audio from the microphone and write it to a temporary wav file."""
+    recording = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1)
+    sd.wait()
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    sf.write(temp.name, recording, sample_rate)
+    return temp.name
 
 
 def transcribe(audio_file: str, model_name: str = "base") -> str:
@@ -16,27 +28,47 @@ def translate_text(text: str, target_lang: str, model_name: str = "opus-mt") -> 
     return translator.translate(text, target_lang=target_lang)
 
 
-def text_to_speech(text: str, lang_code: str = "a", voice: str = "af_heart") -> None:
+def text_to_speech(
+    text: str,
+    lang_code: str = "a",
+    voice: str = "af_heart",
+    play: bool = False,
+) -> None:
+    """Generate speech from text and either save or play it."""
     pipeline = KPipeline(lang_code=lang_code)
     generator = pipeline(text, voice=voice)
     for i, (_, _, audio) in enumerate(generator):
-        sf.write(f"output_{i}.wav", audio, 24000)
+        if play:
+            sd.play(audio, 24000)
+            sd.wait()
+        else:
+            sf.write(f"output_{i}.wav", audio, 24000)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Transcribe, translate and speak audio")
-    parser.add_argument("audio", help="Path to an audio file")
     parser.add_argument("target_lang", help="Target language code for translation")
+    parser.add_argument("audio", nargs="?", help="Path to an audio file")
     parser.add_argument("--whisper-model", default="base", dest="whisper_model", help="Whisper model to use")
     parser.add_argument("--easynmt-model", default="opus-mt", dest="easynmt_model", help="EasyNMT model to use")
     parser.add_argument("--tts-lang", default="a", dest="tts_lang", help="Kokoro language code")
     parser.add_argument("--voice", default="af_heart", help="Voice name for Kokoro")
+    parser.add_argument("--mic", action="store_true", help="Record from microphone instead of file")
+    parser.add_argument("--duration", type=int, default=5, help="Recording duration when using microphone")
+    parser.add_argument("--play", action="store_true", help="Play audio instead of saving to disk")
     args = parser.parse_args()
 
-    text = transcribe(args.audio, args.whisper_model)
+    if args.mic:
+        audio_path = record_from_microphone(args.duration)
+    else:
+        if not args.audio:
+            parser.error("Audio file path is required unless --mic is used")
+        audio_path = args.audio
+
+    text = transcribe(audio_path, args.whisper_model)
     translated = translate_text(text, args.target_lang, args.easynmt_model)
     print(translated)
-    text_to_speech(translated, args.tts_lang, args.voice)
+    text_to_speech(translated, args.tts_lang, args.voice, play=args.play)
 
 
 if __name__ == "__main__":
