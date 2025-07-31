@@ -24,3 +24,15 @@ python translator.py de --mic --play
 ```
 
 Use `--duration` to specify the recording time in seconds.
+
+## Docker
+You can also run the translator inside a container. Build the image and run the CLI:
+```bash
+docker build -t aitranslator .
+docker run --rm -it aitranslator --help
+```
+
+With Docker Compose:
+```bash
+docker compose run translator --help
+```
