@@ -25,6 +25,16 @@ python translator.py de --mic --play
 
 Use `--duration` to specify the recording time in seconds.
 
+## Web interface
+You can launch a small web application with:
+
+```bash
+python webapp.py
+```
+
+Open <http://localhost:5000> in your browser to upload an audio file. The page
+will show the translated text and an audio player with the generated speech.
+
 ## Docker
 You can also run the translator inside a container. Build the image and run the CLI:
 ```bash
@@ -35,4 +45,9 @@ docker run --rm -it aitranslator --help
 With Docker Compose:
 ```bash
 docker compose run translator --help
+```
+
+To test the web interface with Docker Compose:
+```bash
+docker compose up web
 ```
