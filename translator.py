@@ -6,6 +6,8 @@ import soundfile as sf
 import sounddevice as sd
 import tempfile
 from typing import Optional
+import io
+import numpy as np
 
 
 def record_from_microphone(duration: int = 5, sample_rate: int = 16000) -> str:
@@ -43,6 +45,26 @@ def text_to_speech(
             sd.wait()
         else:
             sf.write(f"output_{i}.wav", audio, 24000)
+
+
+def text_to_speech_bytes(
+    text: str,
+    lang_code: str = "a",
+    voice: str = "af_heart",
+) -> bytes:
+    """Return generated speech as WAV bytes."""
+    pipeline = KPipeline(lang_code=lang_code)
+    generator = pipeline(text, voice=voice)
+    audio_segments = []
+    for _, _, audio in generator:
+        audio_segments.append(audio)
+    if not audio_segments:
+        return b""
+    combined = np.concatenate(audio_segments)
+    buffer = io.BytesIO()
+    sf.write(buffer, combined, 24000, format="wav")
+    buffer.seek(0)
+    return buffer.read()
 
 
 def main() -> None:

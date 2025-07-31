@@ -6,3 +6,11 @@ services:
       - .:/app
     command: ["--help"]
     tty: true
+  web:
+    build: .
+    image: translator:latest
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    command: ["python", "webapp.py"]
