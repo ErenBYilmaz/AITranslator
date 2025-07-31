@@ -2,6 +2,7 @@ version: '3.9'
 services:
   translator:
     build: .
+    image: translator:latest
     volumes:
       - .:/app
     command: ["--help"]
