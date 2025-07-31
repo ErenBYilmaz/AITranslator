@@ -1,0 +1,8 @@
+version: '3.9'
+services:
+  translator:
+    build: .
+    volumes:
+      - .:/app
+    command: ["--help"]
+    tty: true
