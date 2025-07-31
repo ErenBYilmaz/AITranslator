@@ -1,6 +1,6 @@
 # AITranslator
 
-This project provides a minimal pipeline for speech translation. It uses OpenAI's Whisper to transcribe audio, EasyNMT for language translation, and Kokoro for text‑to‑speech synthesis. The resulting audio files are written to disk as `output_N.wav`.
+This project provides a minimal pipeline for speech translation. It uses OpenAI's Whisper to transcribe audio, EasyNMT for language translation, and Kokoro for text‑to‑speech synthesis. By default the generated audio is written to disk as `output_N.wav`.
 
 ## Requirements
 Install the dependencies from `requirements.txt`:
@@ -12,6 +12,15 @@ On some systems you may also need [`ffmpeg`](https://ffmpeg.org/) and `espeak-ng
 
 ## Usage
 ```
-python translator.py input.wav de
+python translator.py de input.wav
 ```
 This will transcribe `input.wav`, translate the text to German and generate speech audio files using Kokoro.
+
+### Microphone mode
+You can also record from the microphone and play the translated speech directly through the speakers:
+
+```
+python translator.py de --mic --play
+```
+
+Use `--duration` to specify the recording time in seconds.
