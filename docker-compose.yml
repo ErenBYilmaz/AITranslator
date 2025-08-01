@@ -1,11 +1,15 @@
 services:
   translator:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/DockerfileTranslator
     image: translator:latest
     volumes:
       - .:/app
     command: ["--help"]
     tty: true
+    networks:
+      - ai_network
   web:
     build: .
     image: translator:latest
@@ -14,3 +18,50 @@ services:
     ports:
       - "5000:5000"
     command: ["python", "webapp.py"]
+    networks:
+      - ai_network
+  easynmt:
+    image: easynmt_local
+    build:
+      context: .
+      dockerfile: docker/DockerfileEasyNMT
+    container_name: easynmt-api
+    environment:
+      MAX_WORKERS_BACKEND: "1"
+      EASYNMT_BATCH_SIZE: "4"
+      EASYNMT_CACHE: "/easynmt-models"
+      HF_HOME : "/hf-hub-cache"
+      TIMEOUT : "1200"
+    volumes:
+      - easynmt-models:/easynmt-models
+      - hf-hub-cache:/hf-hub-cache
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    ports:
+      - 24080:80
+    networks:
+      - ai_network
+volumes:
+  easynmt-models:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./easynmt-models
+      o: bind
+  hf-hub-cache:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./hf-hub-cache
+      o: bind
+networks:
+  ai_network:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"

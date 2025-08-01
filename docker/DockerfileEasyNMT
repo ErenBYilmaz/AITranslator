@@ -1,0 +1,2 @@
+FROM easynmt/api:2.0.2-cuda11.3
+RUN pip install --no-cache transformers==4.46.3

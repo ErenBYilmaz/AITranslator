@@ -11,11 +11,14 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Install Python dependencies
-COPY requirements.txt ./
+RUN pip install --no-cache-dir soundfile sounddevice Flask numpy
+#RUN pip install --no-cache-dir openai-whisper
+#RUN pip install --no-cache-dir "kokoro>=0.9.4"
+COPY ../requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application source
-COPY . .
+COPY .. .
 
 # Default to showing the CLI help
 ENTRYPOINT ["python", "translator.py"]
