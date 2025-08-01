@@ -1,6 +1,5 @@
 import argparse
 import whisper
-from easynmt import EasyNMT
 from kokoro import KPipeline
 import soundfile as sf
 import sounddevice as sd
@@ -41,6 +40,7 @@ def translate_text(
         if isinstance(translated, list):
             return " ".join(translated)
         return str(translated)
+    from easynmt import EasyNMT
     translator = EasyNMT(model_name)
     return translator.translate(text, target_lang=target_lang)
 
