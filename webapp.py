@@ -4,6 +4,9 @@ import os
 from flask import Flask, request
 from translator import transcribe, translate_text, text_to_speech_bytes
 
+REST_URL = os.getenv("EASYNMT_REST_URL", "http://easynmt-api/translate")
+USE_LOCAL = os.getenv("USE_LOCAL_EASYNMT", "false").lower() in ("1", "true", "yes")
+
 app = Flask(__name__)
 
 INDEX_HTML = """
@@ -39,8 +42,9 @@ def translate_route():
     voice = request.form.get("voice", "af_heart")
     target = request.form.get("target", "de")
 
+    rest_url = None if USE_LOCAL else REST_URL
     text = transcribe(audio_path, whisper_model)
-    translated = translate_text(text, target, easynmt_model)
+    translated = translate_text(text, target, easynmt_model, rest_url=rest_url)
     audio_bytes = text_to_speech_bytes(translated, tts_lang, voice)
     os.remove(audio_path)
 

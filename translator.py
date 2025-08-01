@@ -8,6 +8,7 @@ import tempfile
 from typing import Optional
 import io
 import numpy as np
+import requests
 
 
 def record_from_microphone(duration: int = 5, sample_rate: int = 16000) -> str:
@@ -25,7 +26,21 @@ def transcribe(audio_file: str, model_name: str = "base") -> str:
     return result.get("text", "")
 
 
-def translate_text(text: str, target_lang: str, model_name: str = "opus-mt") -> str:
+def translate_text(
+    text: str,
+    target_lang: str,
+    model_name: str = "opus-mt",
+    rest_url: Optional[str] = None,
+) -> str:
+    """Translate text either locally with EasyNMT or via the REST API."""
+    if rest_url:
+        resp = requests.get(rest_url, params={"text": text, "target_lang": target_lang})
+        resp.raise_for_status()
+        data = resp.json()
+        translated = data.get("translated")
+        if isinstance(translated, list):
+            return " ".join(translated)
+        return str(translated)
     translator = EasyNMT(model_name)
     return translator.translate(text, target_lang=target_lang)
 
@@ -73,6 +88,16 @@ def main() -> None:
     parser.add_argument("audio", nargs="?", help="Path to an audio file")
     parser.add_argument("--whisper-model", default="base", dest="whisper_model", help="Whisper model to use")
     parser.add_argument("--easynmt-model", default="opus-mt", dest="easynmt_model", help="EasyNMT model to use")
+    parser.add_argument(
+        "--rest-url",
+        default="http://easynmt-api/translate",
+        help="EasyNMT REST API endpoint. Use empty string to run locally.",
+    )
+    parser.add_argument(
+        "--use-local-easynmt",
+        action="store_true",
+        help="Use local EasyNMT instead of REST API",
+    )
     parser.add_argument("--tts-lang", default="a", dest="tts_lang", help="Kokoro language code")
     parser.add_argument("--voice", default="af_heart", help="Voice name for Kokoro")
     parser.add_argument("--mic", action="store_true", help="Record from microphone instead of file")
@@ -87,8 +112,15 @@ def main() -> None:
             parser.error("Audio file path is required unless --mic is used")
         audio_path = args.audio
 
+    rest_url = None if args.use_local_easynmt or not args.rest_url else args.rest_url
+
     text = transcribe(audio_path, args.whisper_model)
-    translated = translate_text(text, args.target_lang, args.easynmt_model)
+    translated = translate_text(
+        text,
+        args.target_lang,
+        args.easynmt_model,
+        rest_url=rest_url,
+    )
     print(translated)
     text_to_speech(translated, args.tts_lang, args.voice, play=args.play)
 
