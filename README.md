@@ -25,6 +25,13 @@ python translator.py de --mic --play
 
 Use `--duration` to specify the recording time in seconds.
 
+### EasyNMT REST API
+By default the translator sends translation requests to the EasyNMT REST service
+defined in `docker-compose.yml`.  Pass `--use-local-easynmt` if you want to use
+a locally installed EasyNMT library instead.  The REST endpoint can be changed
+via `--rest-url` (or the `EASYNMT_REST_URL` environment variable for the web
+app).
+
 ## Web interface
 You can launch a small web application with:
 

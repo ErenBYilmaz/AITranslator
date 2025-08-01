@@ -5,3 +5,4 @@ soundfile
 sounddevice
 Flask
 numpy
+requests
