@@ -39,7 +39,8 @@ You can launch a small web application with:
 python webapp.py
 ```
 
-Open <http://localhost:5000> in your browser to upload an audio file. The page
+Open <http://localhost:5000> in your browser to upload an audio file or record
+directly from the microphone using the **Start Recording** button. The page
 will show the translated text and an audio player with the generated speech.
 
 ## Docker
