@@ -2,7 +2,7 @@ import base64
 import tempfile
 import os
 import subprocess
-from flask import Flask, request
+from flask import Flask, request, render_template
 from translator import transcribe, translate_text, text_to_speech_bytes
 
 REST_URL = os.getenv("EASYNMT_REST_URL", "http://easynmt-api/translate")
@@ -33,71 +33,10 @@ def convert_to_wav(input_path: str) -> str:
     os.remove(input_path)
     return out_path
 
-INDEX_HTML = """
-<!doctype html>
-<title>AITranslator</title>
-<h1>Speech to Speech Translation</h1>
-<form id="uploadForm" action="/translate" method="post" enctype="multipart/form-data">
-  <p><input id="audioInput" type="file" name="audio" accept="audio/*" required></p>
-  <p>Target language code: <input name="target" value="de"></p>
-  <p>Whisper model: <input name="whisper_model" value="base"></p>
-  <p>EasyNMT model: <input name="easynmt_model" value="opus-mt"></p>
-  <p>TTS lang code: <input name="tts_lang" value="a"></p>
-  <p>Voice: <input name="voice" value="af_heart"></p>
-  <p><button type="submit">Translate</button></p>
-</form>
-
-<h2>Microphone</h2>
-<p>
-  <button type="button" id="startRecord">Start Recording</button>
-  <button type="button" id="stopRecord" disabled>Stop</button>
-</p>
-<p><audio id="recordedAudio" controls style="display:none"></audio></p>
-
-<script>
-let mediaRecorder;
-let chunks = [];
-const startBtn = document.getElementById('startRecord');
-const stopBtn = document.getElementById('stopRecord');
-const audioElem = document.getElementById('recordedAudio');
-const fileInput = document.getElementById('audioInput');
-
-startBtn.onclick = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-    chunks = [];
-    mediaRecorder = new MediaRecorder(stream);
-    mediaRecorder.ondataavailable = e => chunks.push(e.data);
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunks, {type: 'audio/webm'});
-      const file = new File([blob], 'recording.webm', {type: 'audio/webm'});
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      fileInput.files = dt.files;
-      audioElem.src = URL.createObjectURL(blob);
-      audioElem.style.display = 'block';
-    };
-    mediaRecorder.start();
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-  } catch(err) {
-    alert('Could not start recording: ' + err);
-  }
-};
-
-stopBtn.onclick = () => {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-  }
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-};
-</script>
-"""
 
 @app.route("/")
 def index():
-    return INDEX_HTML
+    return render_template("index.html")
 
 @app.route("/translate", methods=["POST"])
 def translate_route():

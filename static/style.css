@@ -1,0 +1,10 @@
+body {
+    font-family: sans-serif;
+    max-width: 600px;
+    margin: auto;
+    padding: 1em;
+}
+
+#recordedAudio {
+    display: none;
+}
