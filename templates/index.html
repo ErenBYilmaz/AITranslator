@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+    <title>AITranslator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<h1>Speech to Speech Translation</h1>
+<form id="uploadForm" action="/translate" method="post" enctype="multipart/form-data">
+  <p><input id="audioInput" type="file" name="audio" accept="audio/*" required></p>
+  <p>Target language code: <input name="target" value="de"></p>
+  <p>Whisper model: <input name="whisper_model" value="base"></p>
+  <p>EasyNMT model: <input name="easynmt_model" value="opus-mt"></p>
+  <p>TTS lang code: <input name="tts_lang" value="a"></p>
+  <p>Voice: <input name="voice" value="af_heart"></p>
+  <p><button type="submit">Translate</button></p>
+</form>
+
+<h2>Microphone</h2>
+<p>
+  <button type="button" id="startRecord">Start Recording</button>
+  <button type="button" id="stopRecord" disabled>Stop</button>
+</p>
+<p><audio id="recordedAudio" controls></audio></p>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
