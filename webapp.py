@@ -4,11 +4,34 @@ import os
 import subprocess
 from flask import Flask, request, render_template
 from translator import transcribe, translate_text, text_to_speech_bytes
+from typing import List
 
 REST_URL = os.getenv("EASYNMT_REST_URL", "http://easynmt-api/translate")
 USE_LOCAL = os.getenv("USE_LOCAL_EASYNMT", "false").lower() in ("1", "true", "yes")
 
 app = Flask(__name__)
+
+
+def _load_supported_languages() -> List[str]:
+    """Parse the notes/easynmt.md file and extract supported language codes."""
+    langs = set()
+    notes_path = os.path.join(os.path.dirname(__file__), "notes", "easynmt.md")
+    try:
+        with open(notes_path, "r", encoding="utf-8") as fh:
+            for line in fh:
+                if "**Supported languages" in line:
+                    parts = line.split(":", 1)
+                    if len(parts) > 1:
+                        for code in parts[1].split(","):
+                            code = code.strip().strip("*").strip()
+                            if code:
+                                langs.add(code)
+    except FileNotFoundError:
+        pass
+    return sorted(langs)
+
+
+SUPPORTED_LANGUAGES = _load_supported_languages()
 
 
 def convert_to_wav(input_path: str) -> str:
@@ -36,7 +59,7 @@ def convert_to_wav(input_path: str) -> str:
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", languages=SUPPORTED_LANGUAGES)
 
 @app.route("/translate", methods=["POST"])
 def translate_route():
