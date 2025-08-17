@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+    <title>Translation Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+</head>
+<body>
+<h1>Result</h1>
+<p>{{ translated }}</p>
+<audio id="resultAudio" controls autoplay src="data:audio/wav;base64,{{ audio_b64 }}"></audio>
+<p><a href="/">Back</a></p>
+<script>
+  document.getElementById('resultAudio').addEventListener('ended', function() {
+    window.location.href = '/';
+  });
+</script>
+</body>
+</html>
