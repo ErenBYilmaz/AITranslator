@@ -1,4 +1,5 @@
 import base64
+import logging
 import tempfile
 import os
 import subprocess
@@ -6,7 +7,7 @@ from flask import Flask, request, render_template
 from translator import transcribe, translate_text, text_to_speech_bytes
 from typing import List
 
-REST_URL = os.getenv("EASYNMT_REST_URL", "http://easynmt-api/translate")
+REST_URL = os.getenv("EASYNMT_REST_URL", "http://localhost:24080/translate")
 USE_LOCAL = os.getenv("USE_LOCAL_EASYNMT", "false").lower() in ("1", "true", "yes")
 
 app = Flask(__name__)
@@ -61,8 +62,10 @@ def convert_to_wav(input_path: str) -> str:
 def index():
     return render_template("index.html", languages=SUPPORTED_LANGUAGES)
 
+
 @app.route("/translate", methods=["POST"])
 def translate_route():
+    logging.info('Translation request received')
     f = request.files.get("audio")
     if not f:
         return "Missing audio", 400
@@ -89,6 +92,7 @@ def translate_route():
         f"<audio controls src='data:audio/wav;base64,{b64}'></audio>"
         "<p><a href='/'>Back</a></p>"
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)
