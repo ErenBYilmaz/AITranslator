@@ -3,12 +3,22 @@
 This project provides a minimal pipeline for speech translation. It uses OpenAI's Whisper to transcribe audio, EasyNMT for language translation, and Kokoro for text‑to‑speech synthesis. By default the generated audio is written to disk as `output_N.wav`.
 
 ## Requirements
-Install the dependencies from `requirements.txt`:
+Install the core dependencies from `requirements.txt`:
 ```bash
 pip install -r requirements.txt
 ```
 
-On some systems you may also need [`ffmpeg`](https://ffmpeg.org/) and `espeak-ng` for audio processing.
+The heavier translation, transcription and text-to-speech packages are optional.
+Install them only if you need the full functionality:
+```bash
+pip install -r requirements-optional.txt
+```
+
+If these packages are missing at runtime the application will warn and skip the
+corresponding features.
+
+On some systems you may also need [`ffmpeg`](https://ffmpeg.org/) and
+`espeak-ng` for audio processing.
 
 ## Usage
 ```
