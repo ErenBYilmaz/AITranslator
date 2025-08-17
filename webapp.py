@@ -87,11 +87,7 @@ def translate_route():
     os.remove(audio_path)
 
     b64 = base64.b64encode(audio_bytes).decode("utf-8")
-    return (
-        f"<h1>Result</h1><p>{translated}</p>"
-        f"<audio controls autoplay src='data:audio/wav;base64,{b64}'></audio>"
-        "<p><a href='/'>Back</a></p>"
-    )
+    return render_template("result.html", translated=translated, audio_b64=b64)
 
 
 if __name__ == "__main__":
