@@ -8,3 +8,11 @@ body {
 #recordedAudio {
     display: none;
 }
+
+#recent-languages-container {
+    margin-top: 0.5em;
+}
+
+#recent-languages button {
+    margin-right: 0.5em;
+}
