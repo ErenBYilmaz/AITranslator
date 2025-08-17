@@ -1,4 +1,6 @@
 import argparse
+import logging
+
 import whisper
 from kokoro import KPipeline
 import soundfile as sf
@@ -20,6 +22,7 @@ def record_from_microphone(duration: int = 5, sample_rate: int = 16000) -> str:
 
 
 def transcribe(audio_file: str, model_name: str = "base") -> str:
+    logging.info('Transcribing audio file: %s with model: %s', audio_file, model_name)
     model = whisper.load_model(model_name)
     result = model.transcribe(audio_file)
     return result.get("text", "")
@@ -32,8 +35,9 @@ def translate_text(
     rest_url: Optional[str] = None,
 ) -> str:
     """Translate text either locally with EasyNMT or via the REST API."""
+    logging.info('Translating text: "%s" to language: %s using model: %s', text, target_lang, model_name)
     if rest_url:
-        resp = requests.get(rest_url, params={"text": text, "target_lang": target_lang})
+        resp = requests.get(rest_url, params={ "target_lang": target_lang, "text": text,})
         resp.raise_for_status()
         data = resp.json()
         translated = data.get("translated")
