@@ -1,8 +1,18 @@
 import argparse
 import logging
 
-import whisper
-from kokoro import KPipeline
+# Optional heavy dependencies
+try:  # pragma: no cover - optional dependency
+    import whisper
+except Exception:  # ImportError or other issues
+    whisper = None
+    logging.warning("openai-whisper is not installed. Transcription will be disabled.")
+
+try:  # pragma: no cover - optional dependency
+    from kokoro import KPipeline
+except Exception:
+    KPipeline = None
+    logging.warning("kokoro is not installed. Text-to-speech will be disabled.")
 import soundfile as sf
 import sounddevice as sd
 import tempfile
@@ -23,6 +33,9 @@ def record_from_microphone(duration: int = 5, sample_rate: int = 16000) -> str:
 
 def transcribe(audio_file: str, model_name: str = "base") -> str:
     logging.info('Transcribing audio file: %s with model: %s', audio_file, model_name)
+    if whisper is None:
+        logging.warning("openai-whisper is not installed. Returning empty transcription.")
+        return ""
     model = whisper.load_model(model_name)
     result = model.transcribe(audio_file)
     return result.get("text", "")
@@ -37,14 +50,18 @@ def translate_text(
     """Translate text either locally with EasyNMT or via the REST API."""
     logging.info('Translating text: "%s" to language: %s using model: %s', text, target_lang, model_name)
     if rest_url:
-        resp = requests.get(rest_url, params={ "target_lang": target_lang, "text": text,})
+        resp = requests.get(rest_url, params={"target_lang": target_lang, "text": text})
         resp.raise_for_status()
         data = resp.json()
         translated = data.get("translated")
         if isinstance(translated, list):
             return " ".join(translated)
         return str(translated)
-    from easynmt import EasyNMT
+    try:  # pragma: no cover - optional dependency
+        from easynmt import EasyNMT
+    except Exception:
+        logging.warning("EasyNMT is not installed. Returning original text.")
+        return text
     translator = EasyNMT(model_name)
     return translator.translate(text, target_lang=target_lang)
 
@@ -56,6 +73,9 @@ def text_to_speech(
     play: bool = False,
 ) -> None:
     """Generate speech from text and either save or play it."""
+    if KPipeline is None:
+        logging.warning("kokoro is not installed. Skipping text-to-speech generation.")
+        return
     pipeline = KPipeline(lang_code=lang_code)
     generator = pipeline(text, voice=voice)
     for i, (_, _, audio) in enumerate(generator):
@@ -72,6 +92,9 @@ def text_to_speech_bytes(
     voice: str = "af_heart",
 ) -> bytes:
     """Return generated speech as WAV bytes."""
+    if KPipeline is None:
+        logging.warning("kokoro is not installed. Returning empty audio bytes.")
+        return b""
     pipeline = KPipeline(lang_code=lang_code)
     generator = pipeline(text, voice=voice)
     audio_segments = []
