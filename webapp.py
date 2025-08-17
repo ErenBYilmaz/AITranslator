@@ -35,6 +35,20 @@ def _load_supported_languages() -> List[str]:
 SUPPORTED_LANGUAGES = _load_supported_languages()
 
 
+# Mapping from translation target language codes to Kokoro TTS language codes.
+# Defaults to American English ("a") when a language is not found.
+TTS_LANG_MAP = {
+    "en": "a",  # American English
+    "es": "e",  # Spanish
+    "fr": "f",  # French
+    "hi": "h",  # Hindi
+    "it": "i",  # Italian
+    "ja": "j",  # Japanese
+    "pt": "p",  # Brazilian Portuguese
+    "zh": "z",  # Mandarin Chinese
+}
+
+
 def convert_to_wav(input_path: str) -> str:
     """Convert an audio file to WAV format using ffmpeg."""
     if input_path.lower().endswith(".wav"):
@@ -76,9 +90,9 @@ def translate_route():
     audio_path = convert_to_wav(audio_path)
     whisper_model = request.form.get("whisper_model", "base")
     easynmt_model = request.form.get("easynmt_model", "opus-mt")
-    tts_lang = request.form.get("tts_lang", "a")
+    target = request.form.get("target", "de").lower()
+    tts_lang = TTS_LANG_MAP.get(target, "a")
     voice = request.form.get("voice", "af_heart")
-    target = request.form.get("target", "de")
 
     rest_url = None if USE_LOCAL else REST_URL
     text = transcribe(audio_path, whisper_model)
