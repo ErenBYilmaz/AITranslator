@@ -6,3 +6,4 @@ sounddevice
 Flask
 numpy
 requests
+hf_xet
